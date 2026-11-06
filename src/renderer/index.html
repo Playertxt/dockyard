@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'">
+  <title>Lookout</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="nav">
+      <div class="brand"><img src="../assets/icon.png" alt=""><span>Lookout</span></div>
+      <nav id="nav">
+        <button data-view="overview"><svg viewBox="0 0 24 24"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg><span>Why is it slow?</span></button>
+        <button data-view="processes"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span>Processes</span></button>
+        <button data-view="windows"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/></svg><span>Windows</span><em id="lostBadge" class="badge" hidden></em></button>
+        <button data-view="network"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/></svg><span>Network</span></button>
+        <button data-view="history"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>History</span></button>
+        <button data-view="rules"><svg viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg><span>Rules</span></button>
+        <button data-view="focus"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg><span>Focus mode</span><em id="focusBadge" class="badge on" hidden>on</em></button>
+        <button data-view="find"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><span>Who's using…</span></button>
+        <button data-view="recent"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 3-6.2M4 4v4h4"/></svg><span>Recently ended</span><em id="recentBadge" class="badge" hidden></em></button>
+      </nav>
+      <div class="nav-foot">
+        <div class="mini" id="miniStats"></div>
+        <button data-view="settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span>Settings</span></button>
+      </div>
+    </aside>
+
+    <main id="main">
+      <!-- Overview -->
+      <section class="view" id="v-overview">
+        <header class="vh"><div><h1>How's your PC doing?</h1><p class="sub">Lookout checks what's slowing things down and explains it in plain words.</p></div>
+          <div class="vh-right" id="chips"></div></header>
+        <div class="meters" id="meters"></div>
+        <div class="findings" id="findings"><div class="empty">Taking the first measurements…</div></div>
+        <div class="facts" id="facts"></div>
+      </section>
+
+      <!-- Processes -->
+      <section class="view" id="v-processes">
+        <header class="vh"><div><h1>Processes</h1></div>
+          <div class="vh-right">
+            <input id="procSearch" class="search" placeholder="Search name, PID or path  (Ctrl+F)" spellcheck="false">
+            <div class="seg" id="procMode"><button data-mode="apps">Apps</button><button data-mode="tree">Tree</button><button data-mode="all">All</button></div>
+            <button class="btn ghost" id="resumeAllBtn" hidden>Resume all</button>
+          </div></header>
+        <div class="split">
+          <div class="table-wrap">
+            <div class="thead" id="procHead"></div>
+            <div class="tbody" id="procBody"></div>
+          </div>
+          <aside class="detail" id="procDetail"><div class="empty">Select a process to see what it is and what you can do with it.</div></aside>
+        </div>
+      </section>
+
+      <!-- Windows -->
+      <section class="view" id="v-windows">
+        <header class="vh"><div><h1>Windows</h1><p class="sub">Every open window, plus the ones that got lost off-screen, turned invisible or were hidden.</p></div>
+          <div class="vh-right">
+            <input id="winSearch" class="search" placeholder="Search windows" spellcheck="false">
+            <label class="check"><input type="checkbox" id="winInvisible"> Show invisible windows</label>
+          </div></header>
+        <div id="lostWins"></div>
+        <div id="winList" class="cards"></div>
+      </section>
+
+      <!-- Network -->
+      <section class="view" id="v-network">
+        <header class="vh"><div><h1>Network</h1><p class="sub">Which apps are talking to the internet, and who they're talking to.</p></div>
+          <div class="vh-right"><input id="netSearch" class="search" placeholder="Search apps, hosts or ports" spellcheck="false"></div></header>
+        <div id="netBanner"></div>
+        <div class="meters two" id="netMeters"></div>
+        <div class="table-wrap solo">
+          <div class="thead net-cols"><span>App</span><span class="r">Connections</span><span class="r">Listening</span><span class="r">Download</span><span class="r">Upload</span></div>
+          <div class="tbody" id="netBody"></div>
+        </div>
+      </section>
+
+      <!-- History -->
+      <section class="view" id="v-history">
+        <header class="vh"><div><h1>History</h1><p class="sub">Scroll back to see what was hogging your PC a few minutes ago. Lookout keeps the last hour while it runs.</p></div>
+          <div class="vh-right">
+            <div class="seg" id="histMetric"><button data-m="cpu">CPU</button><button data-m="mem">Memory</button><button data-m="io">Disk &amp; I/O</button><button data-m="net">Network</button></div>
+            <div class="seg" id="histRange"><button data-r="5">5 min</button><button data-r="15">15 min</button><button data-r="30">30 min</button><button data-r="60">1 hour</button></div>
+          </div></header>
+        <div class="chart-card">
+          <canvas id="histChart"></canvas>
+          <div id="histTip" class="tip" hidden></div>
+          <div class="legend" id="histLegend"></div>
+        </div>
+        <div class="hist-bottom">
+          <div class="card"><h3 id="momentTitle">Click the chart to see that moment</h3><div id="moment"></div></div>
+          <div class="card"><div class="card-h"><h3>What happened</h3>
+            <div class="seg small" id="evFilter"><button data-f="actions">Actions</button><button data-f="start">Started</button><button data-f="exit">Ended</button><button data-f="all">All</button></div></div>
+            <div id="events" class="events"></div></div>
+        </div>
+      </section>
+
+      <!-- Rules -->
+      <section class="view" id="v-rules">
+        <header class="vh"><div><h1>Rules</h1><p class="sub">Let Lookout handle things for you. Rules apply to whole apps and run while Lookout is open (even in the tray).</p></div>
+          <div class="vh-right"><button class="btn primary" id="addRule">New rule</button></div></header>
+        <div id="ruleEditor"></div>
+        <div id="ruleList" class="rule-list"></div>
+        <h3 class="section">Ideas</h3>
+        <div id="rulePresets" class="presets"></div>
+      </section>
+
+      <!-- Focus -->
+      <section class="view" id="v-focus">
+        <header class="vh"><div><h1>Focus mode</h1><p class="sub">One click to give a game or work app the whole PC. Everything is put back when you stop.</p></div></header>
+        <div id="focusBody"></div>
+      </section>
+
+      <!-- Find -->
+      <section class="view" id="v-find">
+        <header class="vh"><div><h1>Who's using…</h1><p class="sub">Find the app that's holding a file open or sitting on a port.</p></div></header>
+        <div class="two-col">
+          <div class="card">
+            <h3>…this file or folder?</h3>
+            <p class="hint">For "The action can't be completed because the file is open in another program" and USB drives that won't eject.</p>
+            <div class="drop" id="drop">Drop a file or folder here</div>
+            <div class="row"><input id="filePath" class="search grow" placeholder="C:\path\to\file" spellcheck="false"><button class="btn" id="pickFile">File…</button><button class="btn" id="pickFolder">Folder…</button><button class="btn primary" id="checkFile">Check</button></div>
+            <div id="fileResult"></div>
+          </div>
+          <div class="card">
+            <h3>…this port?</h3>
+            <p class="hint">For "Port 3000 is already in use" and finding what's listening on your PC.</p>
+            <div class="row"><input id="portNum" class="search grow" type="number" min="1" max="65535" placeholder="e.g. 3000"><button class="btn primary" id="checkPort">Check</button></div>
+            <div class="row quick" id="portQuick"></div>
+            <div id="portResult"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Recent -->
+      <section class="view" id="v-recent">
+        <header class="vh"><div><h1>Recently ended</h1><p class="sub">Ended something by mistake? Start it again exactly as it was (same program and command line).</p></div>
+          <div class="vh-right"><button class="btn ghost" id="clearRecent">Clear list</button></div></header>
+        <div id="recentList" class="cards"></div>
+      </section>
+
+      <!-- Settings -->
+      <section class="view" id="v-settings">
+        <header class="vh"><div><h1>Settings</h1></div></header>
+        <div class="card settings" id="settingsBody"></div>
+      </section>
+    </main>
+  </div>
+
+  <div id="menu" class="menu" hidden></div>
+  <div id="toasts" class="toasts"></div>
+  <script src="app.js"></script>
+</body>
+</html>

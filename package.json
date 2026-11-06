@@ -1,0 +1,39 @@
+{
+  "name": "lookout",
+  "productName": "Lookout",
+  "version": "1.0.0",
+  "description": "A task manager that tells you why your PC is slow, remembers the last hour, finds lost windows and locked files, and runs rules for you.",
+  "main": "src/main/main.js",
+  "author": "Playertxt",
+  "license": "MIT",
+  "homepage": "https://github.com/Playertxt/dockyard",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "test": "node test/run-tests.js",
+    "icons": "electron build/make-icon.js",
+    "dist:win": "electron-builder --win",
+    "dist:linux": "electron-builder --linux",
+    "dist:linux-tar": "electron-builder --linux tar.gz"
+  },
+  "build": {
+    "appId": "app.lookout.taskmanager",
+    "productName": "Lookout",
+    "directories": { "output": "dist", "buildResources": "build" },
+    "files": ["src/**/*", "package.json"],
+    "win": { "icon": "build/icon.png", "target": ["nsis", "portable"] },
+    "nsis": { "artifactName": "Lookout-Setup-${version}.exe", "oneClick": false, "allowToChangeInstallationDirectory": true, "createDesktopShortcut": true, "shortcutName": "Lookout" },
+    "portable": { "artifactName": "Lookout-${version}-portable.exe" },
+    "linux": {
+      "icon": "build/icon.png",
+      "category": "System",
+      "target": ["AppImage", "deb", "tar.gz"],
+      "synopsis": "A task manager that explains what's slowing your PC down",
+      "maintainer": "Playertxt <noreply@github.com>"
+    }
+  },
+  "devDependencies": {
+    "electron": "^45.2.3",
+    "electron-builder": "^26.0.12"
+  }
+}
